@@ -4,6 +4,8 @@ from numpy import uint8
 
 from utils import uint8_sequence
 
+import re
+
 command = {
     "STOP": 0b111111,
     "INPUT": 0b000000,
@@ -47,8 +49,18 @@ memories = {
     "M7": 0b111,
 }
 
-def compile_line(line: str) -> Sequence[uint8]:
-    tokens = line.split('//')[0].strip().split()
+def remove_comments(line: str) -> str:
+    return line.split('//')[0].strip()
+
+def compile_line(line: str, ref_mark: dict[int, int] = {}) -> Sequence[uint8]:
+    tokens = line.split()
+    for i in range(1, 4):
+        token = tokens[i]
+        if token[0] == '[' and token[-1] == ']':
+            mark_id = int(token[1:-1])
+            if mark_id not in ref_mark:
+                raise ValueError(f"Undefined Mark `<{mark_id}>`")
+            tokens[i] = str(ref_mark[mark_id])
     cmd_str = tokens[0]
     para1_str = tokens[1]
     para2_str = tokens[2]
@@ -56,7 +68,7 @@ def compile_line(line: str) -> Sequence[uint8]:
 
     cmd = command.get(cmd_str)
     if cmd is None:
-        raise ValueError("Invalid Command")
+        raise ValueError(f"Invalid Command `{cmd_str}`")
     para1 = para2 = para3 = 0
 
     if para1_str in memories:
@@ -84,9 +96,26 @@ def compile_line(line: str) -> Sequence[uint8]:
 
     return uint8_sequence([cmd, para1, para2, para3])
 
+def clean(code: str) -> str:
+    lines = [remove_comments(line) for line in code.splitlines()]
+    return "\n".join([line for line in lines if line.strip()])
+
 def compile(code: str) -> list[Sequence[uint8]]:
-    lines = code.splitlines()
-    return [compile_line(line) for line in lines if line.strip()]
+    lines = clean(code)
+    cmd_lines: list[str] = []
+
+    ref: dict[int, int] = {}
+    mark = r'<[0-9]*>'
+
+    for i, line in enumerate(lines.splitlines()):
+        if match := re.search(mark, line):
+            ref[int(match.group(0)[1:-1])] = i * 4
+            cmd_lines.append(line[:match.span()[0]] + line[match.span()[1]:])
+            continue
+        cmd_lines.append(line)
+            
+
+    return [compile_line(line, ref) for line in cmd_lines]
 
 def print_bin(*numbers: uint8):
     print([bin(number) for number in numbers])
@@ -98,8 +127,8 @@ def print_bin_lines(*lines: Sequence[uint8]):
 if __name__ == "__main__":
     print_bin_lines(*compile(
         """
-        ADD 128 - M3
-
-        SHOW M3 - -
+        OUTPUT [1] - -
+        ADD 128 - M1 <1>
+        OUTPUT M1 - -
         """
-        ))
+    ))
