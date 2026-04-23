@@ -155,4 +155,5 @@ class CPU:
             
     def update(self):
         if self.running:
-            self.pointer += self.execute(*self.cmd[self.pointer:self.pointer + 4])
+            step = self.execute(*self.cmd[self.pointer:self.pointer + 4])
+            self.pointer = self.pointer + step
