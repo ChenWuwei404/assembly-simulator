@@ -50,7 +50,7 @@ class CPU:
             ram: RAM,
             cmd: RAM,
             input_slot: Callable[[], uint8] = lambda: uint8(input("> ")),
-            output_slot: Callable[[Any], None] = lambda x: print(x, end=''),
+            output_slot: Callable[[Any], None] = lambda x: print(x, end=''),  # type: ignore
         ) -> None:
         self.ram = ram
         self.cmd = cmd
