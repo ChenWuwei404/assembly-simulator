@@ -32,7 +32,7 @@ def test():
 
     if ram.data != [i for i in range(256)]:
         raise 
-
+test()
 print("All Tests Passed Successfully!")
 
 # A possible answer encode in base64
