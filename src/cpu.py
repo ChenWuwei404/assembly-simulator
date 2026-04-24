@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Any
 
 from enum import IntEnum
 
@@ -13,6 +13,11 @@ class Command(IntEnum):
     INPUT = 0b000000
     OUTPUT = 0b000001
     JUMP = 0b000010
+
+    READ = 0b000100
+    WRITE = 0b000101
+
+    ASCII = 0b100000
 
     ADD = 0b010000
     SUB = 0b010001
@@ -44,8 +49,8 @@ class CPU:
             self,
             ram: RAM,
             cmd: RAM,
-            input_slot: Callable[[], uint8] = lambda: uint8(input()),
-            output_slot: Callable[[uint8], None] = lambda x: print(x),
+            input_slot: Callable[[], uint8] = lambda: uint8(input("> ")),
+            output_slot: Callable[[Any], None] = lambda x: print(x, end=''),
         ) -> None:
         self.ram = ram
         self.cmd = cmd
@@ -91,6 +96,14 @@ class CPU:
             case Command.JUMP:
                 self.pointer = value1
                 return 0
+            
+            case Command.READ:
+                self.caches[para3] = self.ram[int(value1)]
+            case Command.WRITE:
+                self.ram[int(value1)] = uint8(value2)
+            
+            case Command.ASCII:
+                self.output_slot(chr(value1))
 
             case Command.ADD:
                 self.caches[para3] = value1 + value2
