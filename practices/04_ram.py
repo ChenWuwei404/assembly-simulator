@@ -6,9 +6,7 @@
 
 code = """
     // Code here
-    ADD M7 1 M7 <1>
-    WRITE M7 M7 -
-    NEQ M7 255 [1]
+    
     STOP - - -
 """
 
