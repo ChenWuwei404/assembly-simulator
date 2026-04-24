@@ -12,6 +12,11 @@ command = {
     "OUTPUT": 0b000001,
     "JUMP": 0b000010,
 
+    "READ": 0b000100,
+    "WRITE": 0b000101,
+
+    "ASCII": 0b100000,
+
     "ADD": 0b010000,
     "SUB": 0b010001,
     "MUL": 0b010010,
