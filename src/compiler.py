@@ -57,12 +57,12 @@ memories = {
 def remove_comments(line: str) -> str:
     return line.split('//')[0].strip()
 
-def compile_line(line: str, ref_mark: dict[int, int] = {}) -> Sequence[uint8]:
+def compile_line(line: str, ref_mark: dict[str, int] = {}) -> Sequence[uint8]:
     tokens = line.split()
     for i in range(1, 4):
         token = tokens[i]
         if token[0] == '[' and token[-1] == ']':
-            mark_id = int(token[1:-1])
+            mark_id = token[1:-1]
             if mark_id not in ref_mark:
                 raise ValueError(f"Undefined Mark `<{mark_id}>`")
             tokens[i] = str(ref_mark[mark_id])
@@ -109,12 +109,12 @@ def compile(code: str) -> list[Sequence[uint8]]:
     lines = clean(code)
     cmd_lines: list[str] = []
 
-    ref: dict[int, int] = {}
-    mark = r'<[0-9]*>'
+    ref: dict[str, int] = {}
+    mark = r'<.*?>'
 
     for i, line in enumerate(lines.splitlines()):
         if match := re.search(mark, line):
-            ref[int(match.group(0)[1:-1])] = i * 4
+            ref[match.group(0)[1:-1]] = i * 4
             cmd_lines.append(line[:match.span()[0]] + line[match.span()[1]:])
             continue
         cmd_lines.append(line)
